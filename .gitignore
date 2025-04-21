@@ -3,4 +3,4 @@ __pycache__/
 .env
 *.ipynb_checkpoints
 .vscode/
-*.csv
+LUNG1_DICOM/
