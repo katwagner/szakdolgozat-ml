@@ -1,14 +1,53 @@
 import os
+import glob
+import argparse
 import pydicom
 import numpy as np
 import SimpleITK as sitk
+from skimage.draw import polygon
+from scipy.ndimage import binary_fill_holes
 
-# ----- Elérési útvonalak -----
-base_dir = "/Users/katwagner/Documents/szakdolgozat-ml/LUNG1_DICOM/manifest-1603198545583/NSCLC-Radiomics/LUNG1-001/09-18-2008-StudyID-NA-69331"
-ct_dir = os.path.join(base_dir, "0.000000-NA-82046")
-rtstruct_path = os.path.join(base_dir, "3.000000-NA-78236", "1-1.dcm")
+# Argumentum feldolgozása
+parser = argparse.ArgumentParser()
+parser.add_argument("--base_dir", required=True,
+    help="A beteg DICOM + RTSTRUCT könyvtárának a gyökérkönyvtára")
+args = parser.parse_args()
+base_dir = args.base_dir
 
-# 1) CT beolvasása és mentése .nii.gz-be
+# Almappák listázása a base_dir alatt
+first_level = [d for d in os.listdir(base_dir)
+               if os.path.isdir(os.path.join(base_dir, d))]
+if len(first_level) == 1:
+    new_dir = os.path.join(base_dir, first_level[0])
+    base_dir = new_dir
+
+subdirs = [os.path.join(base_dir, d) for d in os.listdir(base_dir)
+           if os.path.isdir(os.path.join(base_dir, d))]
+
+# CT-könyvtár automatikus detektálása (legtöbb .dcm fájl)
+ct_dir = max(subdirs, key=lambda d: len(glob.glob(os.path.join(d, "*.dcm"))))
+print(f"CT könyvtár: {ct_dir}")
+
+# RTSTRUCT fájl automatikus detektálása
+rtstruct_path = None
+for d in subdirs:
+    # kihagyjuk a „Segmentation” nevű mappákat
+    if "segmentation" in os.path.basename(d).lower():
+        continue
+    dcms = glob.glob(os.path.join(d, "*.dcm"))
+    if len(dcms) == 1:
+        # ellenőrizzük, hogy ez tényleg RTSTRUCT
+        ds = pydicom.dcmread(dcms[0], stop_before_pixels=True)
+        if getattr(ds, "Modality", "").upper() == "RTSTRUCT":
+            rtstruct_path = dcms[0]
+            break
+
+if rtstruct_path is None:
+    raise FileNotFoundError("Nem találtam RTSTRUCT fájlt!")
+
+print(f"RTSTRUCT fájl: {rtstruct_path}")
+
+# CT beolvasása és mentése .nii.gz-be
 ct_files = sorted([os.path.join(ct_dir, f) for f in os.listdir(ct_dir) if f.lower().endswith(".dcm")])
 reader = sitk.ImageSeriesReader()
 reader.SetFileNames(ct_files)
@@ -16,22 +55,25 @@ ct_image = reader.Execute()
 sitk.WriteImage(ct_image, os.path.join(base_dir, "ct.nii.gz"))
 print("CT elmentve.")
 
-# 2) RTSTRUCT beolvasása
+# RTSTRUCT beolvasása
 ds = pydicom.dcmread(rtstruct_path)
 
-# 3) ROI megkeresése a StructureSetROISequence-ben
-target_label = "GTV-1"
+
+# ROI megkeresése a StructureSetROISequence-ben
 roi_number = None
 for roi in ds.StructureSetROISequence:
-    if roi.ROIName.upper() == target_label.upper():
+    name = roi.ROIName.lower()
+    if "gtv" in name:
         roi_number = roi.ROINumber
+        target_label = roi.ROIName  # megtartjuk az eredeti nevet is
         break
 if roi_number is None:
-    raise ValueError(f"'{target_label}' ROI nem található.")
+    raise ValueError("Nem találtam GTV kontúrt az RTSTRUCT-ban!")
 
-print(f"ROI '{target_label}' azonosítója: {roi_number}")
+print(f"ROI kiválasztva: {target_label} (ROINumber={roi_number})")
 
-# 4) A hozzá tartozó ContourSequence megtalálása
+
+# A hozzá tartozó ContourSequence megtalálása
 contours_seq = None
 for rc in ds.ROIContourSequence:
     if rc.ReferencedROINumber == roi_number:
@@ -40,28 +82,46 @@ for rc in ds.ROIContourSequence:
 if contours_seq is None:
     raise ValueError(f"Nincsenek kontúrok a '{target_label}' ROI-hoz.")
 
-# 5) Maszk generálása a pontokból
-spacing = ct_image.GetSpacing()
-origin  = ct_image.GetOrigin()
-size    = ct_image.GetSize()
+# Maszk inicializálása
+spacing = ct_image.GetSpacing()   # (dx, dy, dz)
+origin  = ct_image.GetOrigin()    # (ox, oy, oz)
+size    = ct_image.GetSize()      # (nx, ny, nz)
+nz, ny, nx = size[2], size[1], size[0]
 
-mask = np.zeros((size[2], size[1], size[0]), dtype=np.uint8)
+mask = np.zeros((nz, ny, nx), dtype=np.uint8)
 
+# Kontúrok síkban történő kitöltése
 for contour in contours_seq:
-    # ContourData laposan tartalmazza [x1,y1,z1, x2,y2,z2, ...]
     pts = np.array(contour.ContourData).reshape(-1, 3)
-    for x_world, y_world, z_world in pts:
-        x = int(round((x_world - origin[0]) / spacing[0]))
-        y = int(round((y_world - origin[1]) / spacing[1]))
-        z = int(round((z_world - origin[2]) / spacing[2]))
-        if 0 <= x < mask.shape[2] and 0 <= y < mask.shape[1] and 0 <= z < mask.shape[0]:
-            mask[z, y, x] = 1
+    # A szelet síkjának Z‐világkoordinátája
+    z_world = pts[0, 2]
+    dz = spacing[2]
+    oz = origin[2]
 
-# 6) SimpleITK képbe csomagolás és mentés
+    # Ha a DZ negatív, fordítsuk meg a képletet
+    if dz > 0:
+        z = int(round((z_world - oz) / dz))
+    else:
+        z = int(round((oz - z_world) / abs(dz)))
+
+    # clamp Z‐index
+    z = max(0, min(nz-1, z))
+
+    # X/Y pixelek
+    xs = ((pts[:, 0] - origin[0]) / spacing[0]).round().astype(int)
+    ys = ((pts[:, 1] - origin[1]) / spacing[1]).round().astype(int)
+    # clamp X/Y‑t is opcionálisan:
+    xs = np.clip(xs, 0, nx-1)
+    ys = np.clip(ys, 0, ny-1)
+
+    # poligon‐kitöltés
+    rr, cc = polygon(ys, xs, shape=(ny, nx))
+    mask[z, rr, cc] = 1
+
+# Maszk mentése
 mask_img = sitk.GetImageFromArray(mask)
 mask_img.SetSpacing(spacing)
 mask_img.SetOrigin(origin)
 mask_img.SetDirection(ct_image.GetDirection())
-
 sitk.WriteImage(mask_img, os.path.join(base_dir, "mask.nii.gz"))
-print("Maszk elmentve.")
+print("Poligontöltéssel készült maszk elmentve.")
