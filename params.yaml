@@ -1,0 +1,14 @@
+imageType:
+  Original: {}
+
+setting:
+  binWidth: 25
+
+featureClass:
+  firstorder: []
+  shape: []
+  glcm: []
+  glrlm: []
+  glszm: []
+  gldm: []
+  ngtdm: []
