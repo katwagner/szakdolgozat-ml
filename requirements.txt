@@ -1,0 +1,52 @@
+autograd==1.7.0
+autograd-gamma==0.5.0
+Bottleneck @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_33wnmqdh9g/croot/bottleneck_1731058648266/work
+Brotli @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_d7pp3g74_g/croot/brotli-split_1736182638718/work
+contourpy @ file:///private/var/folders/c_/qfmhj66j0tn016nkx_th4hxm0000gp/T/abs_6236u4rf19/croot/contourpy_1732540057596/work
+cycler @ file:///tmp/build/80754af9/cycler_1637851556182/work
+dataclasses==0.6
+dicompyler-core @ git+https://github.com/dicompyler/dicompyler-core.git@0d5729d7a2412e1c3f1e4cb4f6b07f7407eb8b06
+docopt==0.6.2
+ecos==2.0.14
+fonttools @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_706ove9ndu/croot/fonttools_1737039799828/work
+formulaic==1.1.1
+imageio==2.37.0
+interface-meta==1.3.0
+joblib @ file:///private/var/folders/c_/qfmhj66j0tn016nkx_th4hxm0000gp/T/abs_825_m6wwnf/croot/joblib_1718217221510/work
+kiwisolver @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_92lgswl3y6/croot/kiwisolver_1737040154211/work
+lazy_loader==0.4
+lifelines==0.30.0
+matplotlib==3.10.0
+networkx==3.4.2
+numexpr @ file:///private/var/folders/c_/qfmhj66j0tn016nkx_th4hxm0000gp/T/abs_ffj5ghzq2u/croot/numexpr_1730215943719/work
+numpy @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_5fmmnmaopm/croot/numpy_and_numpy_base_1725470312793/work/dist/numpy-2.0.1-cp310-cp310-macosx_10_15_x86_64.whl#sha256=1abc5cd4905baeff6488cfb6d6c604380179b691062e03d7bb93afedc40e3ca4
+opencv-python==4.11.0.86
+osqp==0.6.7.post3
+packaging @ file:///private/var/folders/c_/qfmhj66j0tn016nkx_th4hxm0000gp/T/abs_15t4xe1fp0/croot/packaging_1734472125760/work
+pandas @ file:///private/var/folders/c_/qfmhj66j0tn016nkx_th4hxm0000gp/T/abs_d6o0iypzho/croot/pandas_1732735102618/work/dist/pandas-2.2.3-cp310-cp310-macosx_10_15_x86_64.whl#sha256=6334d127aafbc0f099e9829cec4c024bf1459028d5f1d4817e6ccc63b7cb8369
+pillow @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_a48h7ifhf6/croot/pillow_1744613605363/work
+pydicom==3.0.1
+pykwalify==1.8.0
+pyparsing @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_32bhy1idl3/croot/pyparsing_1731445537860/work
+pyradiomics==3.0.1
+python-dateutil @ file:///private/var/folders/c_/qfmhj66j0tn016nkx_th4hxm0000gp/T/abs_efk5_uakg8/croot/python-dateutil_1716495742183/work
+pytz @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_244ln7biq9/croot/pytz_1713974320727/work
+PyWavelets==1.8.0
+qdldl==0.1.7.post5
+rt-utils==1.2.7
+ruamel.yaml==0.18.10
+ruamel.yaml.clib==0.2.12
+scikit-image==0.25.2
+scikit-learn @ file:///private/var/folders/c_/qfmhj66j0tn016nkx_th4hxm0000gp/T/abs_86qebg7897/croot/scikit-learn_1737988767278/work
+scikit-survival==0.24.1
+scipy @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_89cdpf4bym/croot/scipy_1743153255812/work/dist/scipy-1.15.2-cp310-cp310-macosx_10_15_x86_64.whl#sha256=777d56b93793a5db25257de1a93e5c1165f10d6874cf690c1667ade2ed5f1383
+seaborn==0.13.2
+SimpleITK==2.4.1
+six @ file:///private/var/folders/c_/qfmhj66j0tn016nkx_th4hxm0000gp/T/abs_2e3n1z57yz/croot/six_1744271514562/work
+threadpoolctl @ file:///private/var/folders/c_/qfmhj66j0tn016nkx_th4hxm0000gp/T/abs_83z9rmqojb/croot/threadpoolctl_1719407811780/work
+tifffile==2025.3.30
+tornado @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_a2c0voe1m0/croot/tornado_1733960496093/work
+typing_extensions==4.13.2
+tzdata @ file:///croot/python-tzdata_1690578112552/work
+unicodedata2 @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_c9zunc70re/croot/unicodedata2_1736544422992/work
+wrapt==1.17.2
