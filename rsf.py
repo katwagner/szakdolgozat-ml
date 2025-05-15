@@ -6,6 +6,7 @@ from sksurv.metrics import concordance_index_censored
 from sklearn.model_selection import train_test_split
 from sklearn.inspection import permutation_importance
 from lifelines import KaplanMeierFitter
+from lifelines.statistics import logrank_test
 
 df = pd.read_csv("lung1_filtered_dataset.csv")
 
@@ -81,3 +82,17 @@ plt.legend()
 plt.tight_layout()
 plt.savefig("rsf_risk_groups.png")
 print("KM túlélési görbe elmentve: rsf_risk_groups.png")
+
+# Kockázati csoportok szerinti bontás
+low_risk_mask = risk_qcut == "Alacsony kockázat"
+high_risk_mask = risk_qcut == "Magas kockázat"
+
+# Log-rank teszt futtatása
+results = logrank_test(
+    df.loc[low_risk_mask, "survival_time"],
+    df.loc[high_risk_mask, "survival_time"],
+    event_observed_A=df.loc[low_risk_mask, "event"],
+    event_observed_B=df.loc[high_risk_mask, "event"]
+)
+
+print(f"\nLog-rank teszt p-érték (RSF kockázati csoportokra): {results.p_value:.4f}")

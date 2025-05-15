@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 from lifelines import CoxPHFitter, KaplanMeierFitter
+from lifelines.statistics import logrank_test
 from sklearn.model_selection import train_test_split
 
 df = pd.read_csv("lung1_selected_for_cox.csv")
@@ -37,3 +38,16 @@ plt.tight_layout()
 # Mentés
 plt.savefig("cox_risk_groups.png")
 print("Ábra elmentve: cox_risk_groups.png")
+
+# A két kockázati csoport kiválasztása
+low_risk = df[df["risk_group"] == "Alacsony kockázat"]
+high_risk = df[df["risk_group"] == "Magas kockázat"]
+
+# Log-rank teszt futtatása
+results = logrank_test(
+    low_risk["survival_time"], high_risk["survival_time"],
+    event_observed_A=low_risk["event"],
+    event_observed_B=high_risk["event"]
+)
+
+print(f"\nLog-rank teszt p-érték: {results.p_value:.4f}")
